@@ -857,14 +857,10 @@ void interrupts() {
 
 u8 counter=0;
 u8 key_turbo=0;
-u8 key_save_state=0;
-u8 key_load_state=0;
 u8 key_reset=0;
 
 static void step() {
 
-  if (key_save_state == 1) { dump_state("dump.bin"); key_save_state = 0; }
-  if (key_load_state == 1) { restore_state("dump.bin"); key_load_state = 0; }
   if (key_reset == 1) { reset(); key_reset = 0; }
 
   cpu_step(1);
