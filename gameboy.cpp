@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <cstring>
 #include "gameboy.h"
 
 u8 BOOTROM = 0; // use bootrom?
@@ -934,17 +935,16 @@ void restore_state(const char* fname) {
 }
 */
 
-u8* interface(u8 cmd, u8 data)
+void interface(u8 cmd, u8 data, u8* ptr)
 {
   switch(cmd)
   {
-    case 1: return cart; 
-    case 2: return pix[buffer]; 
-    case 3: reset(); break;
-    case 4: next_frame_skip(data); break;
-    case 5: set_keys(data); break;
-    defult: break;
+    case 1: memcpy(cart, ptr, 0x100000); return;
+    case 2: memcpy(ptr, pix[buffer], 160*144*3); return; 
+    case 3: reset(); return; 
+    case 4: next_frame_skip(data); return; 
+    case 5: set_keys(data); return; 
+    defult: return;
   }
-  return ram;
 }
 

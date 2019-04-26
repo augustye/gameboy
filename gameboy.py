@@ -5,25 +5,21 @@ from scipy.misc import imresize
 import random
 import numpy as np
 
-get_cart_addr   = 1 #u8*  get_cart_addr();
-get_screen      = 2 #u8*  get_screen();
-reset           = 3 #void reset();
-next_frame_skip = 4 #void next_frame_skip(u8);
-set_keys        = 5 #void set_keys(u8 k);
+write_cart      = 1
+get_screen      = 2
+reset           = 3
+next_frame_skip = 4
+set_keys        = 5
 
 # init GB subsystem
 def init(rom_path):
+  _cart  = open(rom_path, 'rb').read()
+  _frame = np.zeros([144,160,3], dtype=np.uint8)
+  _ptr = ffi.cast("uint8_t *", _frame.ctypes.data)
   _gb = ffi.dlopen("./gameboy.so"); 
-  rom_data  = open(rom_path, 'rb').read()
-  cart_addr = _gb.interface(get_cart_addr, 0)
-  ffi.memmove(cart_addr, rom_data, len(rom_data))
-  screen = _gb.interface(get_screen, 0)
-  _frame = ffi.buffer(screen, 160*144*3)
-  _gb.interface(reset, 0)
-  return _frame,_gb
-
-# get pointer to the framebuffer and convert it to numpy array
-def get_frame(_frame): return np.frombuffer(_frame, dtype=np.uint8).reshape(144,160,3)[:,:,:]
+  _gb.interface(write_cart, write_cart, _cart)
+  _gb.interface(reset, reset, _ptr)
+  return _gb, _frame, _ptr
 
 # parse commandline args
 def get_args():
@@ -41,11 +37,11 @@ if __name__ == "__main__":
     ffi = FFI()
 
     #C++ header stuff
-    ffi.cdef("uint8_t* interface(uint8_t cmd, uint8_t data);")
+    ffi.cdef("void interface(uint8_t cmd, uint8_t data, uint8_t* ptr);")
 
     args = get_args()
     imgs,frames,episodes=[],0,0
-    frame, gb = init(args.rom)
+    gb, frame, frame_ptr = init(args.rom)
 
     actions_hex = [
       0x00, #nop
@@ -74,7 +70,7 @@ if __name__ == "__main__":
     while True:
 
       # process a frame
-      raw_frame=get_frame(frame)
+      gb.interface(get_screen, get_screen, frame_ptr)
 
       # checkpoint?
       if (time.time() - last_time) > args.write_gif_every:
@@ -85,7 +81,7 @@ if __name__ == "__main__":
 
       # write frames
       if frames_to_write > 0:
-          fr=np.array(raw_frame)
+          fr = frame.copy()
           imgs.append(np.rot90(np.fliplr(fr)))
           frames_to_write -= 1
 
@@ -96,8 +92,8 @@ if __name__ == "__main__":
 
       # decide on the action
       a = random.randint(0,len(actions_hex)-1)
-      gb.interface(set_keys, actions_hex[a])
-      gb.interface(next_frame_skip, args.skipframes)
+      gb.interface(set_keys, actions_hex[a], frame_ptr)
+      gb.interface(next_frame_skip, args.skipframes, frame_ptr)
 
       # terminate?
       if frames > args.framelimit:
