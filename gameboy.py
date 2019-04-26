@@ -42,10 +42,8 @@ if __name__ == "__main__":
 
     ffi = FFI()
 
-    #C header stuff
-    ffi.cdef("""
-      uint8_t* inteface(uint8_t cmd, uint8_t data);
-    """)
+    #C++ header stuff
+    ffi.cdef("uint8_t* inteface(uint8_t cmd, uint8_t data);")
 
     args = get_args()
     imgs,frames,episodes=[],0,0

@@ -9,7 +9,8 @@ u32 unimpl=0; // err_counter
 
 u8* ptrs[8] = {&B, &C, &D, &E, &H, &L, 0, &A};
 // opcode jump table
-void* ops[256];
+void (* ops[256])();
+
 // mcycle count per op for emulation
 u8 mcycles[256] = {
    4, 12,  8,  8,  4,  4,  8,  4, 20,  8,  8,  8,  4,  4,  8,  4,  // 00-0f
@@ -50,7 +51,7 @@ u8 mbc_mode = 0;
 u8 enable_int = 0;
 u8 disable_int = 0;
 
-void not()   { /*printf("%s, %2x unimplemented\n", debug_name, op); */ unimpl+=1; }
+void na()   { /*printf("%s, %2x unimplemented\n", debug_name, op); */ unimpl+=1; }
 void nop()   { /* nop */  };
 void ei()    { enable_int=1; };
 void di()    { disable_int=1;  };
@@ -466,9 +467,10 @@ void x1f() { rra();  }
 void xcb() { cb_ex(f8()); }
 
 void ops_init() {
+  u16 i;
 
   // init all ops to 'not implemented'
-  for (u16 j=0; j<256; j++) ops[j]=&not;
+  for (i=0; i<256; i++) ops[i]=&na;
 
   // misc (1)
     ops[0x00] = &nop;
@@ -479,7 +481,7 @@ void ops_init() {
     ops[0xd9] = &reti;
 
     // ld8 group
-    for (u8 i=0x40; i<0x80; i++) ops[i]=&ldrr;
+    for (i=0x40; i<0x80; i++) ops[i]=&ldrr;
     ops[0x76] = &halt;
 
     // 06, 0e, 16, 1e, 26, 2e, 36, 3e: load 8 imm
@@ -499,7 +501,7 @@ void ops_init() {
     ops[0xea]=&xea; ops[0xf0]=&xf0;
     ops[0xf2]=&xf2; ops[0xfa]=&xfa;
 
-    for (u8 i=0x80; i<0xc0; i++) ops[i] = &alu;
+    for (i=0x80; i<0xc0; i++) ops[i] = &alu;
     ops[0xc6]=&alu; ops[0xce]=&alu;
     ops[0xd6]=&alu; ops[0xde]=&alu;
     ops[0xe6]=&alu; ops[0xee]=&alu;

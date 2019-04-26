@@ -1,14 +1,14 @@
-GCC=gcc
-C_FLAGS=-Ofast -fPIC
+GCC=g++
+CPP_FLAGS= -fPIC
 OS:=$(shell uname)
 
 all: gameboy.so
 
 gameboy.so: gameboy.o gameboy.h 
-	gcc gameboy.o ${C_FLAGS} -shared -o $@
+	gcc gameboy.o ${CPP_FLAGS} -shared -o $@
 
-%.o: %.c
-	${GCC} ${C_FLAGS} -c $< -o $@
+%.o: %.cpp
+	${GCC} ${CPP_FLAGS} -c $< -o $@
 
 clean:
 	rm -rf *.o gameboy gameboy.so
