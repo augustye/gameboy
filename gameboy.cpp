@@ -937,6 +937,12 @@ void restore_state(const char* fname) {
 
 void interface(u8 cmd, u8 data, u8* ptr)
 {
+#pragma HLS INTERFACE s_axilite     port=return bundle=control_bus
+#pragma HLS INTERFACE s_axilite     port=cmd    bundle=control_bus
+#pragma HLS INTERFACE s_axilite     port=data   bundle=control_bus
+#pragma HLS INTERFACE s_axilite     port=ptr    bundle=control_bus
+#pragma HLS INTERFACE m_axi depth=8 port=ptr    bundle=data_bus
+
   switch(cmd)
   {
     case 1: memcpy(cart, ptr, 0x100000); return;
