@@ -59,7 +59,7 @@ void stop()  { stopped=1; PC++; };
 void oam_ram() { // OAM 'dma' transfer
   if (REG_OAMDMA>0) {
     u16 a = (u16)(REG_OAMDMA) << 8;
-    for (u8 i=0; i<160; i++) { u8 v=r8(a+i); w8(0xfe00+i,v); } // oam mem space
+    for (u8 i=0; i<160; i++) oam[i] = r8(a+i); 
     REG_OAMDMA = 0;
   }
 }
