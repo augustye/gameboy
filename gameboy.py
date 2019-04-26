@@ -16,12 +16,12 @@ set_keys        = 6 #void set_keys(u8 k);
 def init(rom_path):
   _gb = ffi.dlopen("./gameboy.so"); 
   rom_data  = open(rom_path, 'rb').read()
-  cart_addr = _gb.inteface(get_cart_addr, 0)
+  cart_addr = _gb.interface(get_cart_addr, 0)
   ffi.memmove(cart_addr, rom_data, len(rom_data))
-  screen = _gb.inteface(get_screen, 0)
+  screen = _gb.interface(get_screen, 0)
   _frame = ffi.buffer(screen, 160*144*3)
-  _gb.inteface(reset, 0)
-  _gb.inteface(set_limit_speed, 0)
+  _gb.interface(reset, 0)
+  _gb.interface(set_limit_speed, 0)
   return _frame,_gb
 
 # get pointer to the framebuffer and convert it to numpy array
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     ffi = FFI()
 
     #C++ header stuff
-    ffi.cdef("uint8_t* inteface(uint8_t cmd, uint8_t data);")
+    ffi.cdef("uint8_t* interface(uint8_t cmd, uint8_t data);")
 
     args = get_args()
     imgs,frames,episodes=[],0,0
@@ -98,8 +98,8 @@ if __name__ == "__main__":
 
       # decide on the action
       a = random.randint(0,len(actions_hex)-1)
-      gb.inteface(set_keys, actions_hex[a])
-      gb.inteface(next_frame_skip, args.skipframes)
+      gb.interface(set_keys, actions_hex[a])
+      gb.interface(next_frame_skip, args.skipframes)
 
       # terminate?
       if frames > args.framelimit:

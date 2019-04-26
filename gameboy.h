@@ -158,4 +158,4 @@ extern u8* get_cart_addr();
 extern void next_frame(); // go to next frame
 extern void next_frame_skip(u8); // go to nth frame forward (skip n-1)
 
-extern u8* inteface(u8 cmd, u8 data);
+extern u8* interface(u8 cmd, u8 data);

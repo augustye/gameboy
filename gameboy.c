@@ -915,7 +915,7 @@ void restore_state(const char* fname) {
 }
 */
 
-u8* inteface(u8 cmd, u8 data)
+u8* interface(u8 cmd, u8 data)
 {
   switch(cmd)
   {
