@@ -1,7 +1,4 @@
 #include "typedefs.h"
-#include <sys/time.h>
-
-extern double get_time();
 
 //if gameboy color
 #define GBC 0
@@ -151,12 +148,11 @@ extern u8 key_turbo;
 extern u8 key_save_state;
 extern u8 key_load_state;
 extern u8 key_reset;
+extern void set_keys(u8 k);
 
 extern void read_cart(const char* fname);
-extern void set_keys(u8 k);
 extern void dump_state(const char* fname);
 extern void restore_state(const char* fname);
 
 extern void next_frame(); // go to next frame
 extern void next_frame_skip(u8); // go to nth frame forward (skip n-1)
-extern void print_mem(u16,u16);

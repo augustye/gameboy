@@ -7,11 +7,6 @@ u8 renderscan = 1; // enable or disable rendering
 extern u8 debug_name[0x100];
 u32 unimpl=0; // err_counter
 
-double get_time() {
-  struct timeval tv; gettimeofday(&tv, NULL);
-  return (tv.tv_sec + tv.tv_usec * 1e-6);
-}
-
 u8* ptrs[8] = {&B, &C, &D, &E, &H, &L, 0, &A};
 // opcode jump table
 void* ops[256];
@@ -38,7 +33,6 @@ uint32_t cpu_ticks = 0;
 uint32_t gpu_ticks = 0;
 uint32_t total_cpu_ticks = 0;
 uint32_t total_gpu_ticks = 0;
-double   cpu_ts;
 
 u8 halted = 0;
 u8 stopped = 0;
@@ -576,7 +570,6 @@ void reset() {
   unimpl=0;
   ops_init();
   total_cpu_ticks=0;
-  cpu_ts = get_time();
   if (BOOTROM) {
     AF=0; BC=0; DE=0;
     HL=0; SP=0; PC=0;
@@ -931,16 +924,4 @@ void restore_state(const char* fname) {
   fclose(fp);
 }
 
-void print_mem(uint16_t off, uint16_t n) {
-
-  uint8_t col_count = 16;
-  for (uint8_t j = 0; j < n; j++) {
-    printf("0x%04X:", off);
-    for (uint8_t i = 0; i < col_count; i++) {
-      printf(" 0x%02x %3d", r8(off), r8(off));
-      if (i==(col_count-1)) printf("\n");
-      off++;
-    }
-  }
-}
 
