@@ -11,7 +11,8 @@ def init(rom_path):
   rom_data = open(rom_path, 'rb').read()
   ffi.memmove(_gb.get_cart_addr(), rom_data, len(rom_data))
   _frame = ffi.buffer(_gb.get_screen(), 160*144*3)
-  _gb.reset(); _gb.limit_speed=0
+  _gb.reset(); 
+  _gb.set_limit_speed(0);
   return _frame,_gb
 
 # get pointer to the framebuffer and convert it to numpy array
@@ -34,21 +35,15 @@ if __name__ == "__main__":
 
     #C header stuff
     ffi.cdef("""
-    typedef uint8_t u8; 
-    typedef uint16_t u16; 
-    typedef uint32_t u32;
-    void reset();
-    u8* get_screen();
-    u8* get_cart_addr();
-    u8 new_frame;
-    void next_frame_skip(u8);
-    void next_frame();
-    void set_keys(u8 k);
-    void restore_state(const char* fname);
-    u8 r8(u16 a);
-    u16 r16(u16 a);
-    u8 limit_speed;
-    u32 unimpl;
+      typedef uint8_t u8; 
+      typedef uint16_t u16; 
+      typedef uint32_t u32;
+      u8*  get_cart_addr();
+      u8*  get_screen();
+      void reset();
+      void set_limit_speed(u8);
+      void next_frame_skip(u8);
+      void set_keys(u8 k);
     """)
 
     args = get_args()

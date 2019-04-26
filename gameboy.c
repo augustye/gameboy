@@ -894,6 +894,10 @@ void set_keys(u8 k) {
   keys.keys_packed = k; 
 }
 
+void set_limit_speed(u8 l) { 
+  limit_speed = l; 
+}
+
 /*
 void dump_state(const char* fname) {
   FILE *fp = fopen(fname, "wb");

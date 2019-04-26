@@ -148,8 +148,9 @@ extern u8 key_turbo;
 extern u8 key_save_state;
 extern u8 key_load_state;
 extern u8 key_reset;
-extern void set_keys(u8 k);
 
+extern void set_keys(u8 k);
+extern void set_limit_speed(u8 l);
 extern u8* get_cart_addr();
 
 //extern void dump_state(const char* fname);
