@@ -8,8 +8,6 @@ extern u8 debug_name[0x100];
 u32 unimpl=0; // err_counter
 
 u8* ptrs[8] = {&B, &C, &D, &E, &H, &L, 0, &A};
-// opcode jump table
-void (* ops[256])();
 
 // mcycle count per op for emulation
 u8 mcycles[256] = {
@@ -466,111 +464,9 @@ void x1f() { rra();  }
 // prefix cb
 void xcb() { cb_ex(f8()); }
 
-void ops_init() {
-  u16 i;
-
-  // init all ops to 'not implemented'
-  for (i=0; i<256; i++) ops[i]=&na;
-
-  // misc (1)
-    ops[0x00] = &nop;
-    ops[0x10] = &stop;
-    ops[0xf3] = &di;   // interrupt disable
-    ops[0xfb] = &ei;   // interrupt enable
-    ops[0xcb] = &xcb;  // prefix cb
-    ops[0xd9] = &reti;
-
-    // ld8 group
-    for (i=0x40; i<0x80; i++) ops[i]=&ldrr;
-    ops[0x76] = &halt;
-
-    // 06, 0e, 16, 1e, 26, 2e, 36, 3e: load 8 imm
-    ops[0x06]=&ldrr; ops[0x0e]=&ldrr;
-    ops[0x16]=&ldrr; ops[0x1e]=&ldrr;
-    ops[0x26]=&ldrr; ops[0x2e]=&ldrr;
-    ops[0x36]=&ldrr; ops[0x3e]=&ldrr;
-
-    // 0x02, 0x12, 0x22, 0x32, 0x0a, 0x1a, 0x2a, 0x3a: load 8bit indirect
-    ops[0x02]=&x02; ops[0x12]=&x12;
-    ops[0x22]=&x22; ops[0x32]=&x32;
-    ops[0x0a]=&x0a; ops[0x1a]=&x1a;
-    ops[0x2a]=&x2a; ops[0x3a]=&x3a;
-
-    // 0xe0, 0xe2, 0xf0, 0xf2, 0xea, 0xfa
-    ops[0xe0]=&xe0; ops[0xe2]=&xe2;
-    ops[0xea]=&xea; ops[0xf0]=&xf0;
-    ops[0xf2]=&xf2; ops[0xfa]=&xfa;
-
-    for (i=0x80; i<0xc0; i++) ops[i] = &alu;
-    ops[0xc6]=&alu; ops[0xce]=&alu;
-    ops[0xd6]=&alu; ops[0xde]=&alu;
-    ops[0xe6]=&alu; ops[0xee]=&alu;
-    ops[0xf6]=&alu; ops[0xfe]=&alu;
-
-    ops[0x04]=&incdec; ops[0x05]=&incdec; ops[0x0c]=&incdec; ops[0x0d]=&incdec;
-    ops[0x14]=&incdec; ops[0x15]=&incdec; ops[0x1c]=&incdec; ops[0x1d]=&incdec;
-    ops[0x24]=&incdec; ops[0x25]=&incdec; ops[0x2c]=&incdec; ops[0x2d]=&incdec;
-    ops[0x34]=&incdec; ops[0x35]=&incdec; ops[0x3c]=&incdec; ops[0x3d]=&incdec;
-
-    // misc alu
-    ops[0x27]=&x27; // daa
-    ops[0x37]=&x37; // scf
-    ops[0x2f]=&x2f; // cpl
-    ops[0x3f]=&x3f; // ccf
-
-  // 16-bit ld
-    ops[0x01] = &x01; ops[0x11] = &x11;
-    ops[0x21] = &x21; ops[0x31] = &x31;
-    //16-bit pop
-    ops[0xc1] = &xc1; ops[0xd1] = &xd1;
-    ops[0xe1] = &xe1; ops[0xf1] = &xf1;
-    //16-bit push
-    ops[0xc5] = &xc5; ops[0xd5] = &xd5;
-    ops[0xe5] = &xe5; ops[0xf5] = &xf5;
-    ops[0x08] = &x08; ops[0xf9] = &xf9;
-
-  // 16-bit ALU
-  // inc
-    ops[0x03] = &x03; ops[0x13] = &x13;
-    ops[0x23] = &x23; ops[0x33] = &x33;
-  // dec
-    ops[0x0b] = &x0b; ops[0x1b] = &x1b;
-    ops[0x2b] = &x2b; ops[0x3b] = &x3b;
-  // add 16
-    ops[0x09] = &x09; ops[0x19] = &x19;
-    ops[0x29] = &x29; ops[0x39] = &x39;
-    ops[0xe8] = &xe8; ops[0xf8] = &xf8;
-  // end 16-bit ALU
-
-  // jmp
-    ops[0x20] = &x20; ops[0x30] = &x30;
-    ops[0x18] = &x18; ops[0x28] = &x28;
-    ops[0xc2] = &xc2; ops[0xd2] = &xd2;
-    ops[0xc3] = &xc3; ops[0x38] = &x38;
-    ops[0xca] = &xca; ops[0x3a] = &x3a;
-    ops[0xe9] = &xe9;
-  // ret
-    ops[0xc0] = &xc0; ops[0xd0] = &xd0;
-    ops[0xc8] = &xc8; ops[0xd8] = &xd8;
-    ops[0xc9] = &xc9;
-  // calls
-    ops[0xc4] = &xc4; ops[0xd4] = &xd4;
-    ops[0xcc] = &xcc; ops[0xdc] = &xdc;
-    ops[0xcd] = &xcd;
-  //resets
-    ops[0xc7] = &xc7; ops[0xd7] = &xd7;
-    ops[0xe7] = &xe7; ops[0xf7] = &xf7;
-    ops[0xcf] = &xcf; ops[0xdf] = &xdf;
-    ops[0xef] = &xef; ops[0xff] = &xff;
-  //bitwise
-    ops[0x07] = &x07; ops[0x17] = &x17;
-    ops[0x0f] = &x0f; ops[0x1f] = &x1f;
-    ops[0xda] = &xda;
-}
 
 void reset() {
   unimpl=0;
-  ops_init();
   total_cpu_ticks=0;
   if (BOOTROM) {
     AF=0; BC=0; DE=0;
@@ -594,11 +490,115 @@ void reset() {
   }
 }
 
+
+void exec(u8 op) {
+  switch(op){
+
+  // misc (1)
+    case 0x00: return nop();
+    case 0x10: return stop();
+    case 0xf3: return di();   // interrupt disable
+    case 0xfb: return ei();   // interrupt enable
+    case 0xcb: return xcb();  // prefix cb
+    case 0xd9: return reti();
+
+    // ld8 group
+    case 0x76: return halt();
+
+    // 06, 0e, 16, 1e, 26, 2e, 36, 3e: load 8 imm
+    case 0x06: return ldrr(); case 0x0e: return ldrr();
+    case 0x16: return ldrr(); case 0x1e: return ldrr();
+    case 0x26: return ldrr(); case 0x2e: return ldrr();
+    case 0x36: return ldrr(); case 0x3e: return ldrr();
+
+    // 0x02, 0x12, 0x22, 0x32, 0x0a, 0x1a, 0x2a, 0x3a: load 8bit indirect
+    case 0x02: return x02(); case 0x12: return x12();
+    case 0x22: return x22(); case 0x32: return x32();
+    case 0x0a: return x0a(); case 0x1a: return x1a();
+    case 0x2a: return x2a(); case 0x3a: return x3a();
+
+    // 0xe0, 0xe2, 0xf0, 0xf2, 0xea, 0xfa
+    case 0xe0: return xe0(); case 0xe2: return xe2();
+    case 0xea: return xea(); case 0xf0: return xf0();
+    case 0xf2: return xf2(); case 0xfa: return xfa();
+
+    case 0xc6: return alu(); case 0xce: return alu();
+    case 0xd6: return alu(); case 0xde: return alu();
+    case 0xe6: return alu(); case 0xee: return alu();
+    case 0xf6: return alu(); case 0xfe: return alu();
+
+    case 0x04: return incdec(); case 0x05: return incdec(); case 0x0c: return incdec(); case 0x0d: return incdec();
+    case 0x14: return incdec(); case 0x15: return incdec(); case 0x1c: return incdec(); case 0x1d: return incdec();
+    case 0x24: return incdec(); case 0x25: return incdec(); case 0x2c: return incdec(); case 0x2d: return incdec();
+    case 0x34: return incdec(); case 0x35: return incdec(); case 0x3c: return incdec(); case 0x3d: return incdec();
+
+    // misc alu
+    case 0x27: return x27(); // daa
+    case 0x37: return x37(); // scf
+    case 0x2f: return x2f(); // cpl
+    case 0x3f: return x3f(); // ccf
+
+  // 16-bit ld
+    case 0x01: return x01(); case 0x11: return x11();
+    case 0x21: return x21(); case 0x31: return x31();
+    //16-bit pop
+    case 0xc1: return xc1(); case 0xd1: return xd1();
+    case 0xe1: return xe1(); case 0xf1: return xf1();
+    //16-bit push
+    case 0xc5: return xc5(); case 0xd5: return xd5();
+    case 0xe5: return xe5(); case 0xf5: return xf5();
+    case 0x08: return x08(); case 0xf9: return xf9();
+
+  // 16-bit ALU
+  // inc
+    case 0x03: return x03(); case 0x13: return x13();
+    case 0x23: return x23(); case 0x33: return x33();
+  // dec
+    case 0x0b: return x0b(); case 0x1b: return x1b();
+    case 0x2b: return x2b(); case 0x3b: return x3b();
+  // add 16
+    case 0x09: return x09(); case 0x19: return x19();
+    case 0x29: return x29(); case 0x39: return x39();
+    case 0xe8: return xe8(); case 0xf8: return xf8();
+  // end 16-bit ALU
+
+  // jmp
+    case 0x20: return x20(); case 0x30: return x30();
+    case 0x18: return x18(); case 0x28: return x28();
+    case 0xc2: return xc2(); case 0xd2: return xd2();
+    case 0xc3: return xc3(); case 0x38: return x38();
+    case 0xca: return xca(); //case 0x3a: return x3a();
+    case 0xe9: return xe9();
+  // ret
+    case 0xc0: return xc0(); case 0xd0: return xd0();
+    case 0xc8: return xc8(); case 0xd8: return xd8();
+    case 0xc9: return xc9();
+  // calls
+    case 0xc4: return xc4(); case 0xd4: return xd4();
+    case 0xcc: return xcc(); case 0xdc: return xdc();
+    case 0xcd: return xcd();
+  //resets
+    case 0xc7: return xc7(); case 0xd7: return xd7();
+    case 0xe7: return xe7(); case 0xf7: return xf7();
+    case 0xcf: return xcf(); case 0xdf: return xdf();
+    case 0xef: return xef(); case 0xff: return xff();
+  //bitwise
+    case 0x07: return x07(); case 0x17: return x17();
+    case 0x0f: return x0f(); case 0x1f: return x1f();
+    case 0xda: return xda();
+
+    default:
+      if(op >= 0x40 && op < 0x80) return ldrr();
+      if(op >= 0x80 && op < 0xc0) return alu();
+      return na();
+  }
+}
+
 void cpu_step(u32 count) {
   cpu_ticks = 0;
   for (u32 i=0; i<count; i++) {
     op = r8(PC++);
-    ((void(*)(void))ops[op])();
+    exec(op);
     cpu_ticks += mcycles[op];
   }
 }
