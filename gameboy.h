@@ -32,7 +32,6 @@ typedef struct {
       u16 SP; 
       u16 PC;
     };
-    u8 regs8[12];
     u16 regs[6];
   };
   // extra registers for handling register transfers

@@ -7,8 +7,6 @@ u8 renderscan = 1; // enable or disable rendering
 extern u8 debug_name[0x100];
 u32 unimpl=0; // err_counter
 
-u8 ptrs[8] = {1, 0, 3, 2, 5, 4, 6, 7};
-
 // mcycle count per op for emulation
 u8 mcycles[256] = {
    4, 12,  8,  8,  4,  4,  8,  4, 20,  8,  8,  8,  4,  4,  8,  4,  // 00-0f
@@ -287,10 +285,38 @@ void rra()  { A = rr(A);  fZ = 0;}
 extern const char* disasm[256];
 extern void print_regs();
 
+u8 read_reg(u8 idx)
+{
+  switch(idx){
+    case 0: return B; 
+    case 1: return C;
+    case 2: return D; 
+    case 3: return E;
+    case 4: return H; 
+    case 5: return L;
+    case 7: return A;
+    default: return 0;
+  }
+}
+
+u8 write_reg(u8 idx, u8 v)
+{
+  switch(idx){
+    case 0: return B=v; 
+    case 1: return C=v;
+    case 2: return D=v; 
+    case 3: return E=v;
+    case 4: return H=v; 
+    case 5: return L=v;
+    case 7: return A=v;
+    default: return 0;
+  }
+}
+
 void cb_ex(u8 x) { // cb extension
 
   u8 src_idx = x & 0x7; //last 3 bits are reg#
-  u8 src = src_idx == 6 ? r8(HL) : g.regs8[ptrs[src_idx]];
+  u8 src = src_idx == 6 ? r8(HL) : read_reg(src_idx);
   u8 op_group = (x >> 6) & 0x03;
   u8 n = (x >> 3) & 0x07;
   u8 res = src;
@@ -315,7 +341,7 @@ void cb_ex(u8 x) { // cb extension
       res |= (1<<n);  break;
   }
 
-  if (src_idx != 6) g.regs8[ptrs[src_idx]] = res; else w8(HL, res);
+  if (src_idx != 6)  write_reg(src_idx, res); else w8(HL, res);
   u8 mcycl = (src_idx == 6)  ? 16 : 8; // 16 cycles if hl
   cpu_ticks += mcycl;
 }
@@ -341,8 +367,8 @@ void xfa() { A = r8(f16());            }
 void ldrr() {
   u8 src_idx = op & 0x7; //last 3 bits are reg#
   u8 dst_idx = (op >> 3) & 0x7; //last 3 bits are reg#
-  u8 src = (((op >> 6) & 0x3) == 0) ? f8() : src_idx == 6 ? r8(HL) : g.regs8[ptrs[src_idx]];
-  if (dst_idx != 6) g.regs8[ptrs[dst_idx]] = src; else w8(HL, src);
+  u8 src = (((op >> 6) & 0x3) == 0) ? f8() : src_idx == 6 ? r8(HL) : read_reg(src_idx);
+  if (dst_idx != 6) write_reg(dst_idx, src); else w8(HL, src);
 }
 
 // 16-bit ld group
@@ -367,7 +393,7 @@ void xf9() { SP = HL; }
 // 8-bit alu subgroup
 void alu() {
   u8 src_idx = op & 0x7; //last 3 bits are reg#
-  u8 src = (((op >> 6) & 0x3) == 3) ? f8() : src_idx == 6 ? r8(HL) : g.regs8[ptrs[src_idx]];
+  u8 src = (((op >> 6) & 0x3) == 3) ? f8() : src_idx == 6 ? r8(HL) : read_reg(src_idx);
   u8 n = (op >> 3) & 0x07;
 
   switch (n) { // subgroup, bits xxNNNyyy
@@ -385,9 +411,9 @@ void alu() {
 void incdec() {
   u8 n = op & 0x3; //dec/inc
   u8 dst_idx = (op >> 3) & 0x7; //last 3 bits are reg#
-  u8 src = dst_idx == 6 ? r8(HL) : g.regs8[ptrs[dst_idx]];
+  u8 src = dst_idx == 6 ? r8(HL) : read_reg(dst_idx);
   src = n ? dec8(src) : inc8(src);
-  if (dst_idx != 6) g.regs8[ptrs[dst_idx]] = src; else w8(HL, src);
+  if (dst_idx != 6) write_reg(dst_idx, src); else w8(HL, src);
 }
 
 // misc alu
