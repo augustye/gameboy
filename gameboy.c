@@ -468,7 +468,7 @@ void xcb() { cb_ex(f8()); }
 void ops_init() {
 
   // init all ops to 'not implemented'
-  for (u16 i=0; i<256; i++) ops[i]=&not;
+  for (u16 j=0; j<256; j++) ops[j]=&not;
 
   // misc (1)
     ops[0x00] = &nop;
