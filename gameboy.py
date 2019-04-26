@@ -5,14 +5,23 @@ from scipy.misc import imresize
 import random
 import numpy as np
 
+get_cart_addr   = 1 #u8*  get_cart_addr();
+get_screen      = 2 #u8*  get_screen();
+reset           = 3 #void reset();
+set_limit_speed = 4 #void set_limit_speed(u8);
+next_frame_skip = 5 #void next_frame_skip(u8);
+set_keys        = 6 #void set_keys(u8 k);
+
 # init GB subsystem
 def init(rom_path):
   _gb = ffi.dlopen("./gameboy.so"); 
-  rom_data = open(rom_path, 'rb').read()
-  ffi.memmove(_gb.get_cart_addr(), rom_data, len(rom_data))
-  _frame = ffi.buffer(_gb.get_screen(), 160*144*3)
-  _gb.reset(); 
-  _gb.set_limit_speed(0);
+  rom_data  = open(rom_path, 'rb').read()
+  cart_addr = _gb.inteface(get_cart_addr, 0)
+  ffi.memmove(cart_addr, rom_data, len(rom_data))
+  screen = _gb.inteface(get_screen, 0)
+  _frame = ffi.buffer(screen, 160*144*3)
+  _gb.inteface(reset, 0)
+  _gb.inteface(set_limit_speed, 0)
   return _frame,_gb
 
 # get pointer to the framebuffer and convert it to numpy array
@@ -35,15 +44,7 @@ if __name__ == "__main__":
 
     #C header stuff
     ffi.cdef("""
-      typedef uint8_t u8; 
-      typedef uint16_t u16; 
-      typedef uint32_t u32;
-      u8*  get_cart_addr();
-      u8*  get_screen();
-      void reset();
-      void set_limit_speed(u8);
-      void next_frame_skip(u8);
-      void set_keys(u8 k);
+      uint8_t* inteface(uint8_t cmd, uint8_t data);
     """)
 
     args = get_args()
@@ -99,8 +100,8 @@ if __name__ == "__main__":
 
       # decide on the action
       a = random.randint(0,len(actions_hex)-1)
-      gb.set_keys(actions_hex[a])
-      gb.next_frame_skip(args.skipframes)
+      gb.inteface(set_keys, actions_hex[a])
+      gb.inteface(next_frame_skip, args.skipframes)
 
       # terminate?
       if frames > args.framelimit:

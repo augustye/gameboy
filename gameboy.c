@@ -762,9 +762,6 @@ u8 new_frame=0;
 
 void blit() { buffer ^= 1; new_frame = 1; frame_no++; }
 
-// framebuffer access pointer
-u8* get_screen() { return pix[buffer]; }
-
 void gpu_step() {
   u8 lcd_on = (REG_LCDC & 0x80);
   gpu_hblanking = 0;
@@ -885,11 +882,6 @@ void next_frame_skip(u8 skip) {
   }
 }
 
-u8* get_cart_addr()
-{
-  return cart;
-}
-
 void set_keys(u8 k) { 
   keys.keys_packed = k; 
 }
@@ -920,4 +912,19 @@ void restore_state(const char* fname) {
   fclose(fp);
 }
 */
+
+u8* inteface(u8 cmd, u8 data)
+{
+  switch(cmd)
+  {
+    case 1: return cart; 
+    case 2: return pix[buffer]; 
+    case 3: reset(); break;
+    case 4: set_limit_speed(data); break;
+    case 5: next_frame_skip(data); break;
+    case 6: set_keys(data); break;
+    defult: break;
+  }
+  return ram;
+}
 

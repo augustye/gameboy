@@ -104,7 +104,6 @@ extern u8 buffer;
 extern u32 frame_no;
 extern u8 new_frame;
 extern u8 pix[2][160*144*3]; // frambuffer, 69120B
-extern u8* get_screen();
 
 extern uint32_t total_cpu_ticks;
 extern uint32_t total_gpu_ticks;
@@ -158,3 +157,5 @@ extern u8* get_cart_addr();
 
 extern void next_frame(); // go to next frame
 extern void next_frame_skip(u8); // go to nth frame forward (skip n-1)
+
+extern u8* inteface(u8 cmd, u8 data);
