@@ -898,6 +898,7 @@ void set_keys(u8 k) {
   keys.keys_packed = k; 
 }
 
+/*
 void dump_state(const char* fname) {
   FILE *fp = fopen(fname, "wb");
   fwrite(g.regs, 2, 6, fp);
@@ -918,5 +919,5 @@ void restore_state(const char* fname) {
   status=fread(hram, 1, 0x100, fp);
   fclose(fp);
 }
-
+*/
 
