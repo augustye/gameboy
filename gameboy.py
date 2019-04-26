@@ -7,7 +7,9 @@ import numpy as np
 
 # init GB subsystem
 def init(rom_path):
-  _gb = ffi.dlopen("./gameboy.so"); _gb.read_cart(rom_path)
+  _gb = ffi.dlopen("./gameboy.so"); 
+  rom_data = open(rom_path, 'rb').read()
+  ffi.memmove(_gb.get_cart_addr(), rom_data, len(rom_data))
   _frame = ffi.buffer(_gb.get_screen(), 160*144*3)
   _gb.reset(); _gb.limit_speed=0
   return _frame,_gb
@@ -32,10 +34,12 @@ if __name__ == "__main__":
 
     #C header stuff
     ffi.cdef("""
-    typedef uint8_t u8; typedef uint16_t u16; typedef uint32_t u32;
-    void read_cart(const char* romname);
+    typedef uint8_t u8; 
+    typedef uint16_t u16; 
+    typedef uint32_t u32;
     void reset();
     u8* get_screen();
+    u8* get_cart_addr();
     u8 new_frame;
     void next_frame_skip(u8);
     void next_frame();
@@ -49,12 +53,7 @@ if __name__ == "__main__":
 
     args = get_args()
     imgs,frames,episodes=[],0,0
-
-    path_bytes = args.rom.encode('utf-8')
-    logname = args.rom + '.txt'
-
-    rom_path = ffi.new("char[]", path_bytes)
-    frame, gb = init(rom_path)
+    frame, gb = init(args.rom)
 
     actions_hex = [
       0x00, #nop

@@ -889,19 +889,14 @@ void next_frame_skip(u8 skip) {
   }
 }
 
-void read_cart(const char* fname) {
-  FILE * file = fopen(fname, "r+");
-  if (file == NULL) return;
-  fseek(file, 0, SEEK_END);
-  long int size = ftell(file);
-  fclose(file);
-  file = fopen(fname, "r+");
-  int bytes_read = fread(cart, sizeof(u8), size, file);
-  sprintf(debug_name, "%s", fname);
-  fclose(file);
+u8* get_cart_addr()
+{
+  return cart;
 }
 
-void set_keys(u8 k) { keys.keys_packed = k; }
+void set_keys(u8 k) { 
+  keys.keys_packed = k; 
+}
 
 void dump_state(const char* fname) {
   FILE *fp = fopen(fname, "wb");

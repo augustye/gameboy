@@ -150,7 +150,8 @@ extern u8 key_load_state;
 extern u8 key_reset;
 extern void set_keys(u8 k);
 
-extern void read_cart(const char* fname);
+extern u8* get_cart_addr();
+
 extern void dump_state(const char* fname);
 extern void restore_state(const char* fname);
 
