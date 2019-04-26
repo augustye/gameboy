@@ -27,9 +27,12 @@ typedef struct {
       u8 L; u8 H;
       union {
         struct { u8 unused:4; u8 FC:1; u8 FH:1; u8 FN:1; u8 FZ:1;};
-        u8 F; }; u8 A;
-      u16 SP; u16 PC;
+        u8 F; 
+      }; u8 A;
+      u16 SP; 
+      u16 PC;
     };
+    u8 regs8[12];
     u16 regs[6];
   };
   // extra registers for handling register transfers
