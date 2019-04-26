@@ -111,7 +111,6 @@ extern uint32_t cpu_ticks;
 extern uint32_t gpu_ticks;
 extern double cpu_ts;
 
-extern u8 limit_speed;
 extern u8 stopped;
 extern u8 halted;
 extern u8 irq_en;
@@ -149,7 +148,6 @@ extern u8 key_load_state;
 extern u8 key_reset;
 
 extern void set_keys(u8 k);
-extern void set_limit_speed(u8 l);
 extern u8* get_cart_addr();
 
 //extern void dump_state(const char* fname);

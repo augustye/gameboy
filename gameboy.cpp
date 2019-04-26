@@ -788,7 +788,6 @@ void gpu_step() {
   }
 }
 
-u8 limit_speed=1;
 keyboard keys;
 
 u32 timer_internal_div=0;
@@ -863,7 +862,6 @@ static void step() {
   if (key_reset == 1) { reset(); key_reset = 0; }
 
   cpu_step(1);
-  if (limit_speed) {counter++; u8 interv = key_turbo ? 20 : 4; if (counter == interv) { counter = 0; usleep(1); }}
   gpu_step();
   total_cpu_ticks += cpu_ticks;
   total_gpu_ticks += gpu_ticks;
@@ -886,10 +884,6 @@ void next_frame_skip(u8 skip) {
 
 void set_keys(u8 k) { 
   keys.keys_packed = k; 
-}
-
-void set_limit_speed(u8 l) { 
-  limit_speed = l; 
 }
 
 /*
@@ -922,9 +916,8 @@ u8* interface(u8 cmd, u8 data)
     case 1: return cart; 
     case 2: return pix[buffer]; 
     case 3: reset(); break;
-    case 4: set_limit_speed(data); break;
-    case 5: next_frame_skip(data); break;
-    case 6: set_keys(data); break;
+    case 4: next_frame_skip(data); break;
+    case 5: set_keys(data); break;
     defult: break;
   }
   return ram;

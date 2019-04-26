@@ -8,9 +8,8 @@ import numpy as np
 get_cart_addr   = 1 #u8*  get_cart_addr();
 get_screen      = 2 #u8*  get_screen();
 reset           = 3 #void reset();
-set_limit_speed = 4 #void set_limit_speed(u8);
-next_frame_skip = 5 #void next_frame_skip(u8);
-set_keys        = 6 #void set_keys(u8 k);
+next_frame_skip = 4 #void next_frame_skip(u8);
+set_keys        = 5 #void set_keys(u8 k);
 
 # init GB subsystem
 def init(rom_path):
@@ -21,7 +20,6 @@ def init(rom_path):
   screen = _gb.interface(get_screen, 0)
   _frame = ffi.buffer(screen, 160*144*3)
   _gb.interface(reset, 0)
-  _gb.interface(set_limit_speed, 0)
   return _frame,_gb
 
 # get pointer to the framebuffer and convert it to numpy array
