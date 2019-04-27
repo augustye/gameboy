@@ -5,44 +5,45 @@ from scipy.misc import imresize
 import random
 import numpy as np
 
-write_cart      = 1
-get_screen      = 2
-reset           = 3
-next_frame_skip = 4
-set_keys        = 5
+class gameboy_interface():
 
-class gameboy_overlay():
     def __init__(self):
-        self.xlnk = pynq.Xlnk()
-        self.overlay = pynq.Overlay("../gameboy_overlay2.bit")
-    
-    def interface(self, cmd, data, ptr):
-        self.overlay.interface_0.register_map.ptr  = ptr
-        self.overlay.interface_0.register_map.data = data
-        self.overlay.interface_0.register_map.cmd  = cmd
-        self.overlay.interface_0.register_map.CTRL.AP_START = 1
+      self.overlay = pynq.Overlay("../gameboy_overlay2.bit")
+      self.xlnk = pynq.Xlnk()
+      self.frame = self.xlnk.cma_array(shape=(144,160,3), dtype=np.uint8)
+      self.frame_ptr = self.frame.physical_address
+      
+    def interface(self, cmd=0, data=0, ptr=0):  
+      self.overlay.interface_0.register_map.cmd  = cmd
+      self.overlay.interface_0.register_map.data = data
+      self.overlay.interface_0.register_map.ptr  = (ptr or self.frame_ptr)
+      self.overlay.interface_0.register_map.CTRL.AP_START = 1
 
-        count = 0
-        while self.overlay.interface_0.register_map.CTRL.AP_START == 1:
-            time.sleep(1e-6)
-            count+=1
+      count = 0
+      while self.overlay.interface_0.register_map.CTRL.AP_START == 1:
+          time.sleep(1e-6)
+          count+=1
 
-        result = self.overlay.interface_0.register_map.result
-        print("cmd: ", cmd, "result:", result, "delay:", count, " us")
+      result = self.overlay.interface_0.register_map.result
+      print("cmd: ", cmd, "result:", result, "delay:", count, " us")
 
-    
-# init GB subsystem
-def init(rom_path):
-  _gb = gameboy_overlay()
-  _cart = _gb.xlnk.cma_array(shape=(65536,), dtype=np.uint8)
-  _frame = _gb.xlnk.cma_array(shape=(144,160,3), dtype=np.uint8)
+    def write_cart(self, rom_path):
+      rom = self.xlnk.cma_array(shape=(65536,), dtype=np.uint8)
+      np.copyto(rom, np.fromfile(rom_path, dtype=np.uint8))
+      self.interface(cmd=1, ptr=rom.physical_address)
 
-  np.copyto(_cart, np.fromfile(rom_path, dtype=np.uint8))
+    def get_screen(self):
+      self.interface(cmd=2, ptr=self.frame_ptr)
+      return self.frame
 
-  _gb.interface(write_cart, write_cart, _cart.physical_address)
-  _gb.interface(reset, reset, _frame.physical_address)
+    def reset(self):
+      self.interface(cmd=3)
 
-  return _gb, _frame, _frame.physical_address
+    def next_frame_skip(self, data):
+      self.interface(cmd=4, data=data)
+
+    def set_keys(self, data):
+      self.interface(cmd=5, data=data)
 
 # parse commandline args
 def get_args():
@@ -56,9 +57,12 @@ def get_args():
     return parser.parse_args()
 
 if __name__ == "__main__":
+
     args = get_args()
     imgs,frames,episodes=[],0,0
-    gb, frame, frame_ptr = init(args.rom)
+    gb = gameboy_interface()
+    gb.write_cart(args.rom)
+    gb.reset()
 
     actions_hex = [
       0x00, #nop
@@ -87,8 +91,7 @@ if __name__ == "__main__":
     while True:
 
       # process a frame
-      gb.interface(get_screen, get_screen, frame_ptr)
-      print("frame:", frame)
+      frame = gb.get_screen()
 
       # checkpoint?
       if (time.time() - last_time) > args.write_gif_every:
@@ -110,8 +113,8 @@ if __name__ == "__main__":
 
       # decide on the action
       a = random.randint(0,len(actions_hex)-1)
-      gb.interface(set_keys, actions_hex[a], frame_ptr)
-      gb.interface(next_frame_skip, args.skipframes, frame_ptr)
+      gb.set_keys(actions_hex[a])
+      gb.next_frame_skip(args.skipframes)
 
       # terminate?
       if frames > args.framelimit:

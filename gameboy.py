@@ -5,23 +5,36 @@ from scipy.misc import imresize
 import random
 import numpy as np
 
-write_cart      = 1
-get_screen      = 2
-reset           = 3
-next_frame_skip = 4
-set_keys        = 5
+class gameboy_interface():
 
-# init GB subsystem
-def init(rom_path):
-  _cart  = open(rom_path, 'rb').read()
-  _frame = np.zeros([144,160,3], dtype=np.uint8)
-  _frame_ptr = ffi.cast("uint8_t *", _frame.ctypes.data)
-  _result = np.zeros(1, dtype=np.uint32)
-  _result_ptr = ffi.cast("uint32_t *", _result.ctypes.data)
-  _gb = ffi.dlopen("./gameboy.so"); 
-  _gb.interface(write_cart, write_cart, _cart, _result_ptr)
-  _gb.interface(reset, reset, _frame_ptr, _result_ptr)
-  return _gb, _frame, _frame_ptr, _result, _result_ptr
+    def __init__(self):
+      ffi = FFI()
+      ffi.cdef("void interface(uint8_t cmd, uint8_t data, uint8_t* ptr, uint32_t* result);")
+      self.dl = ffi.dlopen("./gameboy.so"); 
+      self.frame = np.zeros([144,160,3], dtype=np.uint8)
+      self.frame_ptr = ffi.cast("uint8_t *", self.frame.ctypes.data)
+      self.result = np.zeros(1, dtype=np.uint32)
+      self.result_ptr = ffi.cast("uint32_t *", self.result.ctypes.data)
+
+    def interface(self, cmd=0, data=0, ptr=0):  
+      self.dl.interface(cmd, data, ptr or self.frame_ptr, self.result_ptr)
+
+    def write_cart(self, rom_path):
+      rom = open(rom_path, 'rb').read()
+      self.interface(cmd=1, ptr=rom)
+
+    def get_screen(self):
+      self.interface(cmd=2, ptr=self.frame_ptr)
+      return self.frame
+
+    def reset(self):
+      self.interface(cmd=3)
+
+    def next_frame_skip(self, data):
+      self.interface(cmd=4, data=data)
+
+    def set_keys(self, data):
+      self.interface(cmd=5, data=data)
 
 # parse commandline args
 def get_args():
@@ -36,14 +49,11 @@ def get_args():
 
 if __name__ == "__main__":
 
-    ffi = FFI()
-
-    #C++ header stuff
-    ffi.cdef("void interface(uint8_t cmd, uint8_t data, uint8_t* ptr, uint32_t* result);")
-
     args = get_args()
     imgs,frames,episodes=[],0,0
-    gb, frame, frame_ptr, result, result_ptr = init(args.rom)
+    gb = gameboy_interface()
+    gb.write_cart(args.rom)
+    gb.reset()
 
     actions_hex = [
       0x00, #nop
@@ -72,7 +82,7 @@ if __name__ == "__main__":
     while True:
 
       # process a frame
-      gb.interface(get_screen, get_screen, frame_ptr, result_ptr)
+      frame = gb.get_screen()
 
       # checkpoint?
       if (time.time() - last_time) > args.write_gif_every:
@@ -94,8 +104,8 @@ if __name__ == "__main__":
 
       # decide on the action
       a = random.randint(0,len(actions_hex)-1)
-      gb.interface(set_keys, actions_hex[a], frame_ptr, result_ptr)
-      gb.interface(next_frame_skip, args.skipframes, frame_ptr, result_ptr)
+      gb.set_keys(actions_hex[a])
+      gb.next_frame_skip(args.skipframes)
 
       # terminate?
       if frames > args.framelimit:

@@ -951,12 +951,13 @@ void interface(u8 cmd, u8 data, u8* ptr, u32* result)
   switch(cmd)
   {
     case 1: 
-      memcpy(cart, ptr, sizeof(cart));  
-      *result = cmd;
+      memcpy(cart, ptr, sizeof(cart));
+      *result = cart[data];  
+      cart[data] = ptr[data];
       break;
     case 2: 
       memcpy(ptr, pix[buffer], sizeof(pix[buffer])); 
-      *result = cmd;
+      *result = pix[buffer][data];
       break; 
     case 3: 
       reset(); 
