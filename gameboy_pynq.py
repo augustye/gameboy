@@ -21,8 +21,15 @@ class gameboy_overlay():
         self.overlay.interface_0.register_map.data = data
         self.overlay.interface_0.register_map.cmd  = cmd
         self.overlay.interface_0.register_map.CTRL.AP_START = 1
+
+        count = 0
+        while self.overlay.interface_0.register_map.CTRL.AP_START == 1:
+            time.sleep(1e-6)
+            count+=1
+
         result = self.overlay.interface_0.register_map.result
-        print("cmd: ", cmd, "result:", result)
+        print("cmd: ", cmd, "result:", result, "delay:", count, " us")
+
     
 # init GB subsystem
 def init(rom_path):
