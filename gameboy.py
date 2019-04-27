@@ -15,11 +15,13 @@ set_keys        = 5
 def init(rom_path):
   _cart  = open(rom_path, 'rb').read()
   _frame = np.zeros([144,160,3], dtype=np.uint8)
-  _ptr = ffi.cast("uint8_t *", _frame.ctypes.data)
+  _frame_ptr = ffi.cast("uint8_t *", _frame.ctypes.data)
+  _result = np.zeros(1, dtype=np.uint32)
+  _result_ptr = ffi.cast("uint32_t *", _result.ctypes.data)
   _gb = ffi.dlopen("./gameboy.so"); 
-  _gb.interface(write_cart, write_cart, _cart)
-  _gb.interface(reset, reset, _ptr)
-  return _gb, _frame, _ptr
+  _gb.interface(write_cart, write_cart, _cart, _result_ptr)
+  _gb.interface(reset, reset, _frame_ptr, _result_ptr)
+  return _gb, _frame, _frame_ptr, _result, _result_ptr
 
 # parse commandline args
 def get_args():
@@ -37,11 +39,11 @@ if __name__ == "__main__":
     ffi = FFI()
 
     #C++ header stuff
-    ffi.cdef("void interface(uint8_t cmd, uint8_t data, uint8_t* ptr);")
+    ffi.cdef("void interface(uint8_t cmd, uint8_t data, uint8_t* ptr, uint32_t* result);")
 
     args = get_args()
     imgs,frames,episodes=[],0,0
-    gb, frame, frame_ptr = init(args.rom)
+    gb, frame, frame_ptr, result, result_ptr = init(args.rom)
 
     actions_hex = [
       0x00, #nop
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     while True:
 
       # process a frame
-      gb.interface(get_screen, get_screen, frame_ptr)
+      gb.interface(get_screen, get_screen, frame_ptr, result_ptr)
 
       # checkpoint?
       if (time.time() - last_time) > args.write_gif_every:
@@ -92,8 +94,8 @@ if __name__ == "__main__":
 
       # decide on the action
       a = random.randint(0,len(actions_hex)-1)
-      gb.interface(set_keys, actions_hex[a], frame_ptr)
-      gb.interface(next_frame_skip, args.skipframes, frame_ptr)
+      gb.interface(set_keys, actions_hex[a], frame_ptr, result_ptr)
+      gb.interface(next_frame_skip, args.skipframes, frame_ptr, result_ptr)
 
       # terminate?
       if frames > args.framelimit:

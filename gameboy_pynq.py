@@ -13,6 +13,7 @@ set_keys        = 5
 
 class gameboy_overlay():
     def __init__(self):
+        self.xlnk = pynq.Xlnk()
         self.overlay = pynq.Overlay("../gameboy_overlay2.bit")
     
     def interface(self, cmd, data, ptr):
@@ -20,13 +21,13 @@ class gameboy_overlay():
         self.overlay.interface_0.register_map.ptr  = ptr
         self.overlay.interface_0.register_map.data = data
         self.overlay.interface_0.register_map.cmd  = cmd
+        self.overlay.interface_0.register_map.cmd  = 0
     
 # init GB subsystem
 def init(rom_path):
-  _xlnk = pynq.Xlnk()
   _gb = gameboy_overlay()
-  _cart = _xlnk.cma_array(shape=(65536,), dtype=np.uint8)
-  _frame = _xlnk.cma_array(shape=(144,160,3), dtype=np.uint8)
+  _cart = _gb.xlnk.cma_array(shape=(65536,), dtype=np.uint8)
+  _frame = _gb.xlnk.cma_array(shape=(144,160,3), dtype=np.uint8)
 
   np.copyto(_cart, np.fromfile(rom_path, dtype=np.uint8))
 
@@ -34,7 +35,6 @@ def init(rom_path):
   _gb.interface(reset, reset, _frame.physical_address)
 
   return _gb, _frame, _frame.physical_address
-
 
 # parse commandline args
 def get_args():
@@ -80,6 +80,7 @@ if __name__ == "__main__":
 
       # process a frame
       gb.interface(get_screen, get_screen, frame_ptr)
+      print("frame:", frame)
 
       # checkpoint?
       if (time.time() - last_time) > args.write_gif_every:
