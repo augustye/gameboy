@@ -945,8 +945,8 @@ void interface(u8 cmd, u8 data, u8* ptr)
 
   switch(cmd)
   {
-    case 1: memcpy(cart, ptr, 0x100000); return;
-    case 2: memcpy(ptr, pix[buffer], 160*144*3); return; 
+    case 1: memcpy(cart, ptr, sizeof(cart)); return;
+    case 2: memcpy(ptr, pix[buffer], sizeof(pix[buffer])); return; 
     case 3: reset(); return; 
     case 4: next_frame_skip(data); return; 
     case 5: set_keys(data); return; 

@@ -100,7 +100,7 @@ gb g;
 #define REG_MBC      (cart[0x0147])
 //mem
 //u8 mem[0x10000];  //64kB
-u8 cart[0x100000]; //1MB
+u8 cart[0x10000]; //1MB --> 64k
 u8 eram[0x10000]; //64kB
 extern u8 buffer;
 extern u32 frame_no;
