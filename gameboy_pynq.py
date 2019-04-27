@@ -17,11 +17,12 @@ class gameboy_overlay():
         self.overlay = pynq.Overlay("../gameboy_overlay2.bit")
     
     def interface(self, cmd, data, ptr):
-        self.overlay.interface_0.register_map.cmd  = 0
         self.overlay.interface_0.register_map.ptr  = ptr
         self.overlay.interface_0.register_map.data = data
         self.overlay.interface_0.register_map.cmd  = cmd
-        self.overlay.interface_0.register_map.cmd  = 0
+        self.overlay.interface_0.register_map.CTRL.AP_START = 1
+        result = self.overlay.interface_0.register_map.result
+        print("cmd: ", cmd, "result:", result)
     
 # init GB subsystem
 def init(rom_path):
