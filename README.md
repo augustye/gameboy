@@ -15,22 +15,22 @@ To run the tests you may need to install several python packages:
 
 - pip3 install cffi array2gif scipy numpy 
 
-To run on CPU
-=============
+Run on CPU
+===========
 
 1. To generate dynamic library, just run: make
 2. Run: python3 gameboy.py --rom mario.gb --write_gif_every 1
 3. GIF files will be generated
 
-To run on FPGA (PYNQ-Z2)
-=========================
+Run on FPGA (PYNQ-Z2)
+=====================
 
 1. Connect to pynq via SSH, change user to root
 2. Run: python3 gameboy_pynq.py --rom mario.gb --write_gif_every 1
 3. GIF files will be generated
 
-To compile for FPGA (PYNQ-Z2)
-=============================
+Compile for FPGA (PYNQ-Z2)
+==========================
 
 1. create a Vivado HLS project, import the c++ code file, compile it and export an IP
 2. create a Vivado project, import the IP, then create a new block design. In the block design connect both the AXI slave and master ports to ZYNQ. Then generate a bitstream, export the block design as tcl, and find the hwh file in project folder.
