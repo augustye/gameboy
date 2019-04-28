@@ -30,3 +30,9 @@ python3 gameboy_pynq.py --rom mario.gb --write_gif_every 1
 
 
 
+To compile for FPGA (PYNQ-Z2)
+=============================
+
+1. create a Vivado HLS project, import the c++ code file, compile it and export an IP
+2. create a Vivado project, import the IP, the create a block design. In the block design connect both the AXI slave and master ports to ZYNQ. Then generate a bitstream, export the block design as tcl, and find the hwh file in project folder.
+
