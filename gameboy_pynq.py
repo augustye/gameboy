@@ -30,10 +30,17 @@ class gameboy_interface():
     def write_cart(self, rom_path):
       rom = self.xlnk.cma_array(shape=(65536,), dtype=np.uint8)
       np.copyto(rom, np.fromfile(rom_path, dtype=np.uint8))
-      self.interface(cmd=1, ptr=rom.physical_address)
+
+      #self.interface(cmd=1, ptr=rom.physical_address)
+      for i in range(len(rom)):
+        self.interface(cmd=6, data=i, ptr=rom.physical_address)
 
     def get_screen(self):
-      self.interface(cmd=2, ptr=self.frame_ptr)
+      
+      #self.interface(cmd=2, ptr=self.frame_ptr)
+      for i in range(144*160*3):
+        self.interface(cmd=8, data=i, ptr=self.frame_ptr)
+
       return self.frame
 
     def reset(self):
