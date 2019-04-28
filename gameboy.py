@@ -9,7 +9,7 @@ class gameboy_interface():
 
     def __init__(self):
       ffi = FFI()
-      ffi.cdef("void interface(uint8_t cmd, uint8_t data, uint8_t* ptr, uint32_t* result);")
+      ffi.cdef("void interface(uint8_t cmd, uint32_t data, uint8_t* ptr, uint32_t* result);")
       self.dl = ffi.dlopen("./gameboy.so"); 
       self.frame = np.zeros([144,160,3], dtype=np.uint8)
       self.frame_ptr = ffi.cast("uint8_t *", self.frame.ctypes.data)

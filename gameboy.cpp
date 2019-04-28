@@ -936,8 +936,7 @@ void restore_state(const char* fname) {
 */
 
 
-u32 interface_count = 0; 
-void interface(u8 cmd, u8 data, u8* ptr, u32* result)
+void interface(u8 cmd, u32 data, u8* ptr, u32* result)
 {
 #pragma HLS INTERFACE s_axilite     port=return bundle=control_bus
 #pragma HLS INTERFACE s_axilite     port=cmd    bundle=control_bus
@@ -946,34 +945,20 @@ void interface(u8 cmd, u8 data, u8* ptr, u32* result)
 #pragma HLS INTERFACE s_axilite     port=result bundle=control_bus
 #pragma HLS INTERFACE m_axi depth=8 port=ptr    bundle=data_bus
 
-  interface_count++;
-
   switch(cmd)
   {
-    case 1: 
-      memcpy(cart, ptr, sizeof(cart));
-      *result = cart[data];  
-      cart[data] = ptr[data];
-      break;
-    case 2: 
-      memcpy(ptr, pix[buffer], sizeof(pix[buffer])); 
-      *result = pix[buffer][data];
-      break; 
-    case 3: 
-      reset(); 
-      *result = cmd;
-      break; 
-    case 4: 
-      next_frame_skip(data); 
-      *result = cmd;
-      break; 
-    case 5: 
-      set_keys(data); 
-      *result = cmd;
-      break; 
-    default: 
-      *result = interface_count;
-      break;
+    case 1: memcpy(cart, ptr, sizeof(cart)); break;
+    case 2: memcpy(ptr, pix[buffer], sizeof(pix[buffer])); break; 
+    case 3: reset(); break; 
+    case 4: next_frame_skip(data); break; 
+    case 5: set_keys(data); break;  
+
+    //debug
+    case 6: cart[data] = ptr[data]; break;
+    case 7: *result = cart[data]; break;
+    case 8: *result = pix[buffer][data]; break;
+
+    default: break;
   }
 }
 
