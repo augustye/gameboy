@@ -8,7 +8,7 @@ import numpy as np
 class gameboy_interface():
 
     def __init__(self):
-      self.overlay = pynq.Overlay("../gameboy_overlay2.bit")
+      self.overlay = pynq.Overlay("gameboy_overlay2.bit")
       self.xlnk = pynq.Xlnk()
       self.frame = self.xlnk.cma_array(shape=(144,160,3), dtype=np.uint8)
       self.frame_ptr = self.frame.physical_address
