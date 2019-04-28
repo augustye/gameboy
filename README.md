@@ -18,15 +18,16 @@ To run the tests you may need to install several python packages:
 To run on CPU
 =============
 
-1. make
-2. python3 gameboy.py --rom mario.gb --write_gif_every 1
+1. To generate dynamic library, just run: make
+2. Run: python3 gameboy.py --rom mario.gb --write_gif_every 1
+3. GIF files will be generated
 
 To run on FPGA (PYNQ-Z2)
 =========================
 
-python3 gameboy_pynq.py --rom mario.gb --write_gif_every 1
-
-
+1. Connect to pynq via SSH, change user to root
+2. Run: python3 gameboy_pynq.py --rom mario.gb --write_gif_every 1
+3. GIF files will be generated
 
 To compile for FPGA (PYNQ-Z2)
 =============================
